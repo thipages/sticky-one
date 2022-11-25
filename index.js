@@ -1,3 +1,59 @@
+/*! (c) Andrea Giammarchi - ISC */
+
+const _ = new WeakMap;
+
+class Broadcast {
+  constructor() {
+    _.set(this, {v: new Map, f: new Map});
+  }
+  all(type, callback) {
+    const {v, f} = _.get(this);
+    if (!f.has(type))
+      f.set(type, new Set);
+    f.get(type).add(callback);
+    if (v.has(type))
+      Promise.resolve(v.get(type)).then(callback);
+  }
+  drop(type) {
+    const {v, f} = _.get(this);
+    if (1 < arguments.length) {
+      if (f.has(type))
+        f.get(type).delete(arguments[1]);
+    }
+    else {
+      v.delete(type);
+      f.delete(type);
+    }
+  }
+  that(type) {
+    if (1 < arguments.length) {
+      const value = arguments[1];
+      const {v, f} = _.get(this);
+      v.set(type, value);
+      if (f.has(type)) {
+        for (const callback of f.get(type))
+          callback(value);
+      }
+      return;
+    }
+    return value => this.that(type, value);
+  }
+  when(type) {
+    const {v} = _.get(this);
+    return v.has(type) ?
+      Promise.resolve(v.get(type)) :
+      new Promise(resolve => {
+        const resolved = value => {
+          this.drop(type, resolved);
+          resolve(value);
+        };
+        this.all(type, resolved);
+      });
+  }
+}
+
+const broadcast = new Broadcast;
+
 /**
  * Create, append, and return, a style node with the passed CSS content.
  * @param {string|string[]} template the CSS text or a template literal array.
@@ -14,7 +70,7 @@ function ustyler(template) {
   return document.head.appendChild(style);
 }
 
-let seed = 's'+(''+Math.random()).replace('.', '');
+let seed = 'sticky_'+(''+Math.random()).replace('.', '');
 let inc = 1;
 var uid = () => seed + `${++inc}`;
 
@@ -70,15 +126,19 @@ function extractCSSVariables (content) {
     )
 }
 
-function sticky ({view, model={}, handleEvent=nop, style, children={}})  {
-    if (!view) {
-        console.error({view, model, handleEvent, style, children});
+const STICKY_CHANNEL = uid();
+function sticky$1 (data)  {
+    return sticky2(typeof data === 'function' ? data() : data)
+}
+function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  {
+    if (!view || typeof view !== 'function') {
+        console.error('inputs leading to error:', {view, model, handleEvent, style, children});
         throw "view property is missing!"
     }
     uid();
     model.broadcast = function (data) {
         for (const command of commands) {
-            command(data);
+            if (command(data)) broadcast.that(STICKY_CHANNEL, 'binding');
         }
     };
     model.handleEvent = handleEvent;
@@ -88,7 +148,7 @@ function sticky ({view, model={}, handleEvent=nop, style, children={}})  {
     let commands = [];
     //
     for (const key of Object.keys(children)) {
-        model[key] = sticky(children[key]());
+        model[key] = sticky$1(children[key]);
     }
     const obj= {
         info() {
@@ -97,10 +157,11 @@ function sticky ({view, model={}, handleEvent=nop, style, children={}})  {
         render () {
             return view(model, model.style)
         },
-        update (newState) {
-            Object.assign (model, newState);
+        update (newModel) {
+            Object.assign (model, newModel);
+            broadcast.that(STICKY_CHANNEL, 'updating');
         },
-        state (path) {
+        model (path) {
             if (!path) {
                 return copy(model)
             } else {
@@ -108,13 +169,14 @@ function sticky ({view, model={}, handleEvent=nop, style, children={}})  {
                 let temp = this;
                 let names=path.split('.');
                 for (name of names) {
-                    temp=temp.state()[name];
+                    temp=temp.model()[name];
                     if (!temp) break;
                 }
                 return temp;
             }
         },
         style (name, value) {
+            // todo : need for a broadcast?
             return S.setCssVariable (name, value)
         },
         bind (newCommand)  {
@@ -123,15 +185,36 @@ function sticky ({view, model={}, handleEvent=nop, style, children={}})  {
             }
         }
     };
+    if (init) {
+        for (const [componentName, initObj] of Object.entries(init)){
+            model[componentName].update(initObj);
+        }
+    }
     return obj;
 }
 function nop () {}
-function copy(state) {
-    const stateCopy = Object.assign({},state);
-    delete stateCopy.handleEvent;
-    delete stateCopy.broadcast;
-    delete stateCopy.style;
-    return stateCopy
+function copy(model) {
+    const modelCopy = Object.assign({},model);
+    delete modelCopy.handleEvent;
+    delete modelCopy.broadcast;
+    delete modelCopy.style;
+    return modelCopy
 }
 
-export { sticky };
+function controller$1 (rootView, renderFunction, rootNode=document.body) {
+    const component = sticky$1(rootView);
+    const render = () => renderFunction(rootNode, component.render);
+    broadcast.all(STICKY_CHANNEL, ()=>{
+        render();
+    });
+    setInterval (render, 500);
+    return {
+        component,
+        render
+    }
+}
+
+const controller=controller$1;
+const sticky = sticky$1;
+
+export { controller, sticky };

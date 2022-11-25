@@ -22,6 +22,13 @@ export default function() {
         children:{
             page1, page21, page22
         },
-        style
+        style,
+        model :
+        {
+            content : [
+               'page1',
+               'page21'
+            ]
+        }
     }
 }

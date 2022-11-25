@@ -8,6 +8,14 @@ export function page1 () {
         },
         view: (m)=>{
             return html`${m.list.render()}`
+        },
+        init : {
+            list: {
+                items:[
+                    {id:1, label:html`<a href="#" >tit</a>`},
+                    {id:2, label:'tit2'}
+                ]
+            }
         }
     }
 }
