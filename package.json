@@ -1,0 +1,36 @@
+{
+  "name": "TOREPLACE",
+  "version": "0.5.0",
+  "description": "TOREPLACE",
+  "keywords": [
+    "TOREPLACE",
+    "TOREPLACE",
+    "TOREPLACE"
+  ],
+  "author": "Thierry PAGES",
+  "license": "MIT",
+  "module": "esm/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thipages/TOREPLACE.git"
+  },
+  "dependencies": {
+    "modern-css-reset": "^1.4.0",
+    "uhtml": "^3.0.1",
+    "ustyler": "^1.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.10",
+    "@babel/preset-env": "^7.17.10",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "scripts": {
+    "build": "npm run rollup:esm && npm run rollup:iife_min && npm run rollup:esm_min && npm run rollup:esm_watch",
+    "rollup:iife_min": "rollup --config rollup/rollup.config_iife_min.js",
+    "rollup:esm_min": "rollup --config rollup/rollup.config_esm_min.js",
+    "rollup:esm": "rollup --config rollup/rollup.config_esm.js",
+    "rollup:esm_watch": "rollup --config rollup/rollup.config_esm.js --w"
+  }
+}
