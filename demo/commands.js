@@ -1,13 +1,7 @@
 import {html} from '../node_modules/uhtml/esm.js'
 
 export function commands (startPage) {
-    const list1 = startPage.model('page1.list')
-    list1.update({
-        items:[
-            {id:1, label:html`<a href="#" >tit</a>`},
-            {id:2, label:'tit2'}
-        ]
-    })
+    const list1 = startPage.page1.list
     list1.bind(
         function (data) {
             list1.style('li', 'green')

@@ -6,8 +6,8 @@ export function page1 () {
         children : {
             list
         },
-        view: (m)=>{
-            return html`${m.list.render()}`
+        view: (m, s, c)=>{
+            return html`${c.list.render()}`
         },
         init : {
             list: {

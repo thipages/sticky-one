@@ -130,6 +130,7 @@ const STICKY_CHANNEL = uid();
 function sticky$1 (data)  {
     return sticky2(typeof data === 'function' ? data() : data)
 }
+const RESTRICTED = ['info', 'render', 'update', 'model', 'bind', 'style'];
 function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  {
     if (!view || typeof view !== 'function') {
         console.error('inputs leading to error:', {view, model, handleEvent, style, children});
@@ -137,57 +138,53 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
     }
     uid();
     model.broadcast = function (data) {
+        let changes = false;
         for (const command of commands) {
-            if (command(data)) broadcast.that(STICKY_CHANNEL, 'binding');
+            if (command(data)) changes = true;
         }
+        if (changes) broadcast.that(STICKY_CHANNEL, 'bound');
     };
     model.handleEvent = handleEvent;
     let S = styler(style);
     model.style = style ? S.classNameToUid : {};
     // Commands
     let commands = [];
-    //
-    for (const key of Object.keys(children)) {
-        model[key] = sticky$1(children[key]);
-    }
     const obj= {
         info() {
             // todo: gives all information about model inputs and outputs
         },
         render () {
-            return view(model, model.style)
+            return view(model, model.style, obj)
         },
         update (newModel) {
             Object.assign (model, newModel);
-            broadcast.that(STICKY_CHANNEL, 'updating');
+            broadcast.that(STICKY_CHANNEL, 'updated');
         },
-        model (path) {
-            if (!path) {
-                return copy(model)
-            } else {
-                // from 'obj1.obj21' to object or undefined
-                let temp = this;
-                let names=path.split('.');
-                for (name of names) {
-                    temp=temp.model()[name];
-                    if (!temp) break;
-                }
-                return temp;
-            }
+        model () {
+            return copy(model)
         },
         style (name, value) {
             // todo : need for a broadcast?
             return S.setCssVariable (name, value)
         },
-        bind (newCommand)  {
-            if (typeof newCommand === 'function') {
-                commands.push(newCommand);
+        bind (command)  {
+            if (typeof command === 'function') {
+                commands.push(command);
             }
         }
     };
+    // Children attachments
+    for (const key of Object.keys(children)) {
+        if (RESTRICTED.indexOf (key) !== -1) {
+            throw "Component name use a restricted sticky word"
+        }
+        obj[key] = sticky$1(children[key]);
+    }
+    // Model initialization
     if (init) {
         for (const [componentName, initObj] of Object.entries(init)){
-            model[componentName].update(initObj);
+            if (!obj[componentName]) throw "Initialization use a wrong component name"
+            obj[componentName].update(initObj);
         }
     }
     return obj;
@@ -195,9 +192,6 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
 function nop () {}
 function copy(model) {
     const modelCopy = Object.assign({},model);
-    delete modelCopy.handleEvent;
-    delete modelCopy.broadcast;
-    delete modelCopy.style;
     return modelCopy
 }
 
