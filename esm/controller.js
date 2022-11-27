@@ -1,16 +1,9 @@
-import { STICKY_CHANNEL, sticky } from "./sticky.js";
-
-import {broadcast} from 'broadcast'
+import { register } from "./notifier.js"
+import { sticky } from "./sticky.js"
 
 export function controller (rootView, renderFunction, rootNode=document.body) {
-    const component = sticky(rootView);
-    const render = () => renderFunction(rootNode, component.render);
-    broadcast.all(STICKY_CHANNEL, ()=>{
-        render()
-    })
-    setInterval (render, 500)
-    return {
-        component,
-        render
-    }
+    const root = sticky(rootView)
+    const renderAll = () => renderFunction(rootNode, root.render)
+    register(renderAll)
+    return {root, renderAll}
 }

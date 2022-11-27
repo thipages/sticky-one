@@ -1,12 +1,11 @@
-import { broadcast } from 'broadcast';
+import { notify } from './notifier.js';
 import styler from './styler.js';
 import uid from './uid.js'
 
-export const STICKY_CHANNEL = uid()
 export function sticky (data)  {
     return sticky2(typeof data === 'function' ? data() : data)
 }
-const RESTRICTED = ['info', 'render', 'update', 'model', 'bind', 'style']
+const RESTRICTED = ['info', 'render', 'update', 'model', 'bind', 'style', 'children']
 function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  {
     if (!view || typeof view !== 'function') {
         console.error('inputs leading to error:', {view, model, handleEvent, style, children})
@@ -18,7 +17,7 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
         for (const command of commands) {
             if (command(data)) changes = true;
         }
-        if (changes) broadcast.that(STICKY_CHANNEL, 'bound')
+        if (changes) notify ()
     }
     model.handleEvent = handleEvent
     let S = styler(style)
@@ -34,7 +33,7 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
         },
         update (newModel) {
             Object.assign (model, newModel)
-            broadcast.that(STICKY_CHANNEL, 'updated')
+            notify()
         },
         model () {
             return copy(model)
@@ -50,7 +49,8 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
         }
     }
     // Children attachments
-    for (const key of Object.keys(children)) {
+    obj.children = Object.keys(children)
+    for (const key of obj.children) {
         if (RESTRICTED.indexOf (key) !== -1) {
             throw "Component name use a restricted sticky word"
         }
@@ -67,6 +67,5 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
 }
 function nop () {}
 function copy(model) {
-    const modelCopy = Object.assign({},model)
-    return modelCopy
+    return Object.assign({},model)
 }

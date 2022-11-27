@@ -1,58 +1,25 @@
-/*! (c) Andrea Giammarchi - ISC */
+let seed = 'sticky_'+(''+Math.random()).replace('.', '');
+let inc = 1;
+var uid = () => seed + `${++inc}`;
 
-const _ = new WeakMap;
+let stickyCallback, updates = false;
+const STICKY = uid();
+const stickyEvent = () => new CustomEvent(STICKY, {});
+const register = (callback) => {
+    if (stickyCallback) return
+    stickyCallback = callback;
+    document.addEventListener(STICKY, ()=>updates = true);
+    refresh();
+};
+const notify = () => document.dispatchEvent (stickyEvent());
 
-class Broadcast {
-  constructor() {
-    _.set(this, {v: new Map, f: new Map});
-  }
-  all(type, callback) {
-    const {v, f} = _.get(this);
-    if (!f.has(type))
-      f.set(type, new Set);
-    f.get(type).add(callback);
-    if (v.has(type))
-      Promise.resolve(v.get(type)).then(callback);
-  }
-  drop(type) {
-    const {v, f} = _.get(this);
-    if (1 < arguments.length) {
-      if (f.has(type))
-        f.get(type).delete(arguments[1]);
+function refresh () {
+    if (updates) {
+        stickyCallback();
+        updates = false;
     }
-    else {
-      v.delete(type);
-      f.delete(type);
-    }
-  }
-  that(type) {
-    if (1 < arguments.length) {
-      const value = arguments[1];
-      const {v, f} = _.get(this);
-      v.set(type, value);
-      if (f.has(type)) {
-        for (const callback of f.get(type))
-          callback(value);
-      }
-      return;
-    }
-    return value => this.that(type, value);
-  }
-  when(type) {
-    const {v} = _.get(this);
-    return v.has(type) ?
-      Promise.resolve(v.get(type)) :
-      new Promise(resolve => {
-        const resolved = value => {
-          this.drop(type, resolved);
-          resolve(value);
-        };
-        this.all(type, resolved);
-      });
-  }
+    requestAnimationFrame(refresh);
 }
-
-const broadcast = new Broadcast;
 
 /**
  * Create, append, and return, a style node with the passed CSS content.
@@ -69,10 +36,6 @@ function ustyler(template) {
   style.appendChild(document.createTextNode(text.join('')));
   return document.head.appendChild(style);
 }
-
-let seed = 'sticky_'+(''+Math.random()).replace('.', '');
-let inc = 1;
-var uid = () => seed + `${++inc}`;
 
 // reference:  https://stackoverflow.com/a/37802204/218223
 const setDOMCssVariable = (uid, value) => document.documentElement.style.setProperty('--' + uid, value);
@@ -126,11 +89,10 @@ function extractCSSVariables (content) {
     )
 }
 
-const STICKY_CHANNEL = uid();
-function sticky$1 (data)  {
+function sticky (data)  {
     return sticky2(typeof data === 'function' ? data() : data)
 }
-const RESTRICTED = ['info', 'render', 'update', 'model', 'bind', 'style'];
+const RESTRICTED = ['info', 'render', 'update', 'model', 'bind', 'style', 'children'];
 function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  {
     if (!view || typeof view !== 'function') {
         console.error('inputs leading to error:', {view, model, handleEvent, style, children});
@@ -142,7 +104,7 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
         for (const command of commands) {
             if (command(data)) changes = true;
         }
-        if (changes) broadcast.that(STICKY_CHANNEL, 'bound');
+        if (changes) notify ();
     };
     model.handleEvent = handleEvent;
     let S = styler(style);
@@ -158,7 +120,7 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
         },
         update (newModel) {
             Object.assign (model, newModel);
-            broadcast.that(STICKY_CHANNEL, 'updated');
+            notify();
         },
         model () {
             return copy(model)
@@ -174,11 +136,12 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
         }
     };
     // Children attachments
-    for (const key of Object.keys(children)) {
+    obj.children = Object.keys(children);
+    for (const key of obj.children) {
         if (RESTRICTED.indexOf (key) !== -1) {
             throw "Component name use a restricted sticky word"
         }
-        obj[key] = sticky$1(children[key]);
+        obj[key] = sticky(children[key]);
     }
     // Model initialization
     if (init) {
@@ -191,24 +154,14 @@ function sticky2 ({view, model={}, handleEvent=nop, style, children={}, init})  
 }
 function nop () {}
 function copy(model) {
-    const modelCopy = Object.assign({},model);
-    return modelCopy
+    return Object.assign({},model)
 }
 
-function controller$1 (rootView, renderFunction, rootNode=document.body) {
-    const component = sticky$1(rootView);
-    const render = () => renderFunction(rootNode, component.render);
-    broadcast.all(STICKY_CHANNEL, ()=>{
-        render();
-    });
-    setInterval (render, 500);
-    return {
-        component,
-        render
-    }
+function controller (rootView, renderFunction, rootNode=document.body) {
+    const root = sticky(rootView);
+    const renderAll = () => renderFunction(rootNode, root.render);
+    register(renderAll);
+    return {root, renderAll}
 }
-
-const controller=controller$1;
-const sticky = sticky$1;
 
 export { controller, sticky };

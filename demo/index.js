@@ -3,5 +3,6 @@ import { controller } from './../index.js';
 import main from './views/main.js'
 import {render} from '../node_modules/uhtml/esm.js'
 
-const {component:startPage, render:r} = controller (main, render)
-commands(startPage)
+const {root, renderAll} = controller (main, render)
+commands(root)
+renderAll()
