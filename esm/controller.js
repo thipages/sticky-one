@@ -1,9 +1,12 @@
 import { register } from "./notifier.js"
-import { sticky } from "./sticky.js"
+import {render} from 'uhtml'
 
-export function controller (rootView, renderFunction, rootNode=document.body) {
-    const root = sticky(rootView)
-    const renderAll = () => renderFunction(rootNode, root.render)
+export function startApp (rootView, rootNode=document.body) {
+    if (!(rootView)) {
+        throw "Controller needs rootView and render parameters"
+    }
+    const root = rootView
+    const renderAll = () => render(rootNode, root.render)
     register(renderAll)
-    return {root, renderAll}
+    renderAll()
 }
