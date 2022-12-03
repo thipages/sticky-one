@@ -2,7 +2,9 @@
 
 Easy Tiny & Sticky JavaScript DOM rendering library
 
-## usage
+## Dependencies
+[uhtml](https://github.com/WebReflection/uhtml), [ustyler](https://github.com/WebReflection/ustyler)
+## Usage
 
 See demo folder for structured examples
 
