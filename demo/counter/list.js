@@ -14,7 +14,7 @@ export default sticky(
         },
         style : {
             container:`
-                margin : var(--margin);
+                margin : var(--margin, 10px);
             `
         }
     }

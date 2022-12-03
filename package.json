@@ -1,11 +1,10 @@
 {
-  "name": "TOREPLACE",
-  "version": "0.5.0",
-  "description": "TOREPLACE",
+  "name": "sticky-one",
+  "version": "0.6.0",
+  "description": "Easy Tiny Sticky JavaScript rendering library",
   "keywords": [
-    "TOREPLACE",
-    "TOREPLACE",
-    "TOREPLACE"
+    "rendering",
+    "mvc"
   ],
   "author": "Thierry PAGES",
   "license": "MIT",
@@ -15,11 +14,11 @@
     "url": "git+https://github.com/thipages/TOREPLACE.git"
   },
   "dependencies": {
-    "modern-css-reset": "^1.4.0",
     "uhtml": "^3.0.1",
     "ustyler": "^1.0.1"
   },
   "devDependencies": {
+    "modern-css-reset": "^1.4.0",
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
     "@rollup/plugin-node-resolve": "^13.3.0",
