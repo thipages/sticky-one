@@ -3,7 +3,7 @@ import { html, sticky } from "../../index.js";
 export default sticky(
     {
         view: (m, s)=> html`
-        <div class=${s.margin}>
+        <div class=${s.container}>
         <button data-ref="minus" onclick=${m}>-</button>
         <span >${m.count}</span>
         <button data-ref="plus" onclick=${m}>+</button>
@@ -13,8 +13,8 @@ export default sticky(
             this.broadcast(e.target.dataset.ref)
         },
         style : {
-            margin:`
-                margin : var(--margin,0);
+            container:`
+                margin : var(--margin);
             `
         }
     }

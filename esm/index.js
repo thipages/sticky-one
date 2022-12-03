@@ -1,3 +1,3 @@
 export { startApp } from './controller.js'
 export {sticky} from './sticky.js'
-export {html, render} from 'uhtml'
+export {html, render, svg} from 'uhtml'
