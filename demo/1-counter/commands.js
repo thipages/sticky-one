@@ -1,4 +1,4 @@
-import list from './list.js'
+import list from './counter.js'
 
 list.bind(function(data) {
     const inc = data === 'plus' ? 1 : -1

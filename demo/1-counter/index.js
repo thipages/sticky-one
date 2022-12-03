@@ -1,7 +1,7 @@
 import './commands.js'
 
-import list from './list.js'
+import counter from './counter.js'
 import { startApp } from "../../index.js"
 
-startApp(list)
+startApp(counter)
 

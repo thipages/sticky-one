@@ -922,8 +922,15 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop})  {
         render () {
             return view(model, model.style, obj)
         },
-        style (name, value) {
-            styleManager.setCssVariable (name, value);
+        style (nameOrObj, value) {
+            if (nameOrObj) {
+                if (typeof nameOrObj === 'string') {
+                    nameOrObj = {[nameOrObj]: value};
+                }
+                for (const [name, value] of Object.entries(nameOrObj)) {
+                    styleManager.setCssVariable (name, value);
+                }
+            }
             return obj
         },
         bind (command)  {
@@ -937,4 +944,8 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop})  {
 }
 function noop () {}
 
-export { html, render, startApp, sticky, svg };
+const R = (...stickies) => stickies.map (
+    (s) => s.render()
+);
+
+export { R, html, render, startApp, sticky, svg };
