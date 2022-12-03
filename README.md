@@ -1,10 +1,10 @@
-# sticky2
+# sticky-one
 
-Easy Tiny Sticky JavaScript DOM rendering library
+Easy Tiny & Sticky JavaScript DOM rendering library
 
 ## usage
 
-See demo folder for architectural examples
+See demo folder for structured examples
 
 ```javascript
 import { html, sticky, startApp } from "sticky-one"
