@@ -10,13 +10,14 @@ See demo folder for structured examples
 
 ```javascript
 import { html, sticky, startApp } from "sticky-one"
-const list = sticky(
+const counter = sticky(
     {
         view: (m, s)=> html`
         <div class=${s.container}>
-        <button data-ref="minus" onclick=${m}>-</button>
-        <span >${m.count}</span>
-        <button data-ref="plus" onclick=${m}>+</button>
+            <button data-ref="minus" onclick=${m}>-</button>
+            <span >${m.count}</span>
+            <button data-ref="plus" onclick=${m}>+</button>
+        </div>
         `,
         model: {count: 0},
         handleEvent: function (e) {
@@ -29,12 +30,12 @@ const list = sticky(
         }
     }
 )
-list.bind(function(data) {
+counter.bind(function(data) {
     const inc = data === 'plus' ? 1 : -1
-    list.model.count+=inc
-    list.style('margin', '20px')
+    counter.model.count+=inc
+    counter.style('margin', '20px')
     return true
 })
-startApp(list)
+startApp(counter)
 
 ```
