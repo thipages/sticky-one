@@ -1,12 +1,14 @@
 import { register } from "./notifier.js"
 import {render} from 'uhtml'
 
-export function startApp (rootView, rootNode=document.body) {
-    if (!(rootView)) {
-        throw "Controller needs rootView and render parameters"
+let instancied = false
+export function startApp (viewDefinition, rootNode=document.body) {
+    if (instancied) return
+    if (!(viewDefinition)) {
+        throw "Controller needs at least a view definition"
     }
-    const root = rootView
-    const renderAll = () => render(rootNode, root.render)
+    instancied = true
+    const renderAll = () => render(rootNode, viewDefinition.render)
     register(renderAll)
     renderAll()
 }

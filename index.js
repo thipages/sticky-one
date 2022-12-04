@@ -814,12 +814,14 @@ const render = (where, what) => {
 const html = tag('html');
 const svg = tag('svg');
 
-function startApp (rootView, rootNode=document.body) {
-    if (!(rootView)) {
-        throw "Controller needs rootView and render parameters"
+let instancied = false;
+function startApp (viewDefinition, rootNode=document.body) {
+    if (instancied) return
+    if (!(viewDefinition)) {
+        throw "Controller needs at least a view definition"
     }
-    const root = rootView;
-    const renderAll = () => render(rootNode, root.render);
+    instancied = true;
+    const renderAll = () => render(rootNode, viewDefinition.render);
     register(renderAll);
     renderAll();
 }
@@ -948,4 +950,4 @@ const R = (...stickies) => stickies.map (
     (s) => s.render()
 );
 
-export { R, html, render, startApp, sticky, svg };
+export { R, html, startApp, sticky, svg };
