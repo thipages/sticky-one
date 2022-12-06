@@ -55,7 +55,7 @@ sticky (
     {
         /**
          *  A required view function with 3 possible parameters
-         *  (model, style, view) => html ` ... `
+         *  (model, style, broadcast) => html ` ... `
          *  model : the view model
          *  style : the view inner style
          *  broadcast  : a reference to the event dispatcher
