@@ -28,7 +28,7 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop})  {
     const obj= {
         model,
         render () {
-            return view(model, model.style, obj)
+            return view(model, model.style, model.broadcast)
         },
         style (nameOrObj, value) {
             if (nameOrObj) {
