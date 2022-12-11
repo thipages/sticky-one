@@ -54,11 +54,10 @@ This module exposes
 sticky (
     {
         /**
-         *  A required view function with 3 possible parameters
-         *  (model, style, broadcast) => html ` ... `
+         *  A required view function with 2 possible parameters
+         *  (model, style) => html ` ... `
          *  model : the view model
          *  style : the view inner style
-         *  broadcast  : a reference to the event dispatcher
          **/
         view,
         /**
