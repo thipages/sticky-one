@@ -11,7 +11,7 @@ function setCssVariable(props, value) {
         setDOMCssVariable(props.uid, props.value)
     }
 }
-export default function (styleObject) {
+export default function (styleObject, transStyle) {
     let classNameToUid={}
     let cssPropertyToUid = {}
     if (styleObject) {
@@ -21,13 +21,14 @@ export default function (styleObject) {
             classNameToUid[key]=uid()
             let  cssProperties=extractCSSVariables(styleString)
             let updatedStyle=styleString;
-            // Iterate through all css Proppertie found
+            // Iterate through all css Propperties found
             for (const {name, defaultValue, uid} of cssProperties) {
+                const transValue = transStyle[name] ? transStyle[name](defaultValue) : defaultValue
                 // Lookups css property to uid to be used in stylesheets
-                cssPropertyToUid[name]={value:defaultValue, uid}
+                cssPropertyToUid[name]={value:transValue, uid}
                 const re = new RegExp('--'+name)
                 updatedStyle = updatedStyle.replace(re, '--'+uid)
-                setCssVariable(cssPropertyToUid[name], defaultValue)
+                setCssVariable(cssPropertyToUid[name], transValue)
             }
             style`
                 .${classNameToUid[key]} {

@@ -852,7 +852,7 @@ function setCssVariable(props, value) {
         setDOMCssVariable(props.uid, props.value);
     }
 }
-function styler (styleObject) {
+function styler (styleObject, transStyle) {
     let classNameToUid={};
     let cssPropertyToUid = {};
     if (styleObject) {
@@ -862,13 +862,14 @@ function styler (styleObject) {
             classNameToUid[key]=uid();
             let  cssProperties=extractCSSVariables(styleString);
             let updatedStyle=styleString;
-            // Iterate through all css Proppertie found
+            // Iterate through all css Propperties found
             for (const {name, defaultValue, uid} of cssProperties) {
+                const transValue = transStyle[name] ? transStyle[name](defaultValue) : defaultValue;
                 // Lookups css property to uid to be used in stylesheets
-                cssPropertyToUid[name]={value:defaultValue, uid};
+                cssPropertyToUid[name]={value:transValue, uid};
                 const re = new RegExp('--'+name);
                 updatedStyle = updatedStyle.replace(re, '--'+uid);
-                setCssVariable(cssPropertyToUid[name], defaultValue);
+                setCssVariable(cssPropertyToUid[name], transValue);
             }
             ustyler`
                 .${classNameToUid[key]} {
@@ -900,12 +901,12 @@ function extractCSSVariables (content) {
 function sticky (data)  {
     return sticky2(typeof data === 'function' ? data() : data)
 }
-function sticky2 ({view, model={}, handleEvent=noop, style=noop})  {
+function sticky2 ({view, model={}, handleEvent=noop, style=noop, transStyle=noop})  {
     if (!view) {
         throw "View property is missing!"
     }
     // Css variables manamenet
-    const styleManager = styler(style);
+    const styleManager = styler(style, transStyle);
     // Add to model broadcast, handleEvent and style restricted properties
     model.broadcast = function (data) {
         let changes = false;
@@ -922,7 +923,7 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop})  {
     const obj= {
         model,
         render () {
-            return view(model, model.style, model.broadcast)
+            return view(model, model.style)
         },
         style (nameOrObj, value) {
             if (nameOrObj) {
@@ -930,11 +931,13 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop})  {
                     nameOrObj = {[nameOrObj]: value};
                 }
                 for (const [name, value] of Object.entries(nameOrObj)) {
-                    styleManager.setCssVariable (name, value);
+                    const transValue = transStyle[name] ? transStyle[name](value) : value;
+                    styleManager.setCssVariable (name, transValue);
                 }
             }
             return obj
         },
+        transStyle,
         bind (command)  {
             if (typeof command === 'function') {
                 commands.push(command);
