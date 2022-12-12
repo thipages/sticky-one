@@ -26,7 +26,8 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop, transStyle=noop
     // Sticky object
     const obj= {
         model,
-        render () {
+        render (updates={}) {
+            obj.update(updates)
             return view(model, model.style)
         },
         style (nameOrObj, value) {
@@ -46,6 +47,10 @@ function sticky2 ({view, model={}, handleEvent=noop, style=noop, transStyle=noop
             if (typeof command === 'function') {
                 commands.push(command)
             }
+            return obj
+        },
+        update (updates) {
+            Object.assign(model, updates)
             return obj
         }
     }
