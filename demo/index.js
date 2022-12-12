@@ -1,7 +1,7 @@
-import { R, html, startApp, sticky } from "./../../index.js"
+import { R, html, startApp, sticky } from "../index.js"
 
-import screen1 from "./../1-counter/index.js";
-import screen2 from "./../2-components/index.js";
+import screen1 from "./1-counter/index.js";
+import screen2 from "./2-components/index.js";
 
 const menuModel = [
     {
